@@ -1,22 +1,19 @@
-import React from 'react'
-import "./transfer.css"
+import React from "react";
+import "./transferHistory.css";
 import { useState } from 'react';
+import moment from 'moment';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-import Navbar from '../../components/navbar/Navbar';
-import { useNavigate } from "react-router-dom";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
+import swal from "sweetalert";
+import userImage from "../../Images/user.png"
 
-function Transfer() {
+function GetPayment() {
     const milliseconds = new Date();
-    const [fromAcc, setFromAcc] = useState("");
-    const [toAcc, setToAcc] = useState("");
-    const [amount, setAmount] = useState("");
-    const [description, setDescription] = useState("");
-    const [errorDescription, setErrorDescription] = useState("");
-    const [modaltitle, setModalTitle] = useState("");
-    const navigate = useNavigate();
-    const url = "http://localhost:3000/transfer";
+    const [sdId, setSdId] = useState("");
+    const [payMents, setPayMents] = useState([]);
+    const [error, setError] = useState("");
+    const url = "http://localhost:3000/getPayment";
 
     const config = {
         "headers": {
@@ -25,84 +22,67 @@ function Transfer() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const values = {
             data: {
-                fromAcc: fromAcc,
-                toAcc: toAcc,
-                amount: amount,
-                description: description,
-                token: Cookies.get('token'),
+                sdId: sdId,
+                token: Cookies.get("token"),
             },
             request: {
                 requestId: uuidv4(),
                 requestTime: milliseconds.getTime(),
             }
         }
-
-        axios.post(url, JSON.stringify(values), config)
+        await axios.post(url, JSON.stringify(values), config)
             .then(res => {
-                console.log(res)
-                if( res.data.responseCode === '00'){
-                    //thanh cong
-                    setModalTitle("Thành công");
-                    sessionStorage.setItem("toAcc", toAcc);
-                    sessionStorage.setItem("amount", amount);
-                    sessionStorage.setItem("description", description);
-                    navigate("/verify_transfer");
+                console.log(res);
+                if (res.data.responseCode === "00") {
+                    setPayMents(res.data.data.payments);
                 } else {
-                    //that bai
-                    setModalTitle("Hệ thống đang xảy ra lỗi vui lòng quay lại sau!");
+                    setError("Hệ thống đang xảy ra lỗi vui lòng quay lại sau!");
                 }
             })
             .catch(error => {
-                setModalTitle("Hệ thống đang xảy ra lỗi vui lòng quay lại sau!");
+                setError("Hệ thống đang xảy ra lỗi vui lòng quay lại sau!");
                 console.log(error);
             })
     }
     return (
-        <>
-            <div className='transferPage'>
-                <div className='transferContainer'>
-                    <div className='transferWraper'>
-                        <h2>Chưc năng chuyển khoản</h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className='transferStyleInput'>
-                                <label>Số tài khoản người nhận</label>
-                                <input type="number" name="accountid" id="accountid" required
-                                    onChange={(e) => setToAcc(e.target.value)} />
+        <div className='transferHisPage'>
+            <div className='transferHisContainer'>
+                <div className='transferHisWrapper'>
+                    <h2>Liệt kê danh sách học phí chưa đóng</h2>
+                    <span className='textErrorMsg'>{error}</span>
+                    <form onSubmit={handleSubmit} className="transferForm">
+                        <div className='transferStyleInput'>
+                            <label>Mã số sinh viên</label>
+                            <input type="text" name="acctid" id="acctid" required
+                                onChange={(e) => setSdId(e.target.value)} />
+                        </div>
+                        <div className='transferStyleInput'>
+                            <button type="submit" className='btnButton btnTransfer'>Truy vấn</button>
+                        </div>
+                    </form>
+                </div>
+                <div className='transferWrapperResult '>
+                    <div className="transFerResult">   
+                        {payMents && payMents.map((item, index) => {
+                            return <div className="transFerResultCard" key={index}>
+                                <img
+                                    src={userImage}
+                                    className='resultImg'
+                                />
+                                <div className="transFerResultItem">
+                                    <span>{item.fee}</span>
+                                    <span>{item.description}</span>
+                                </div>
                             </div>
-                            <div className='transferStyleInput'>
-                                <label>Số tiền chuyển khoản</label>
-                                <input type="number" name="amount" id="amount" required
-                                    onChange={(e) => setAmount(e.target.value)} />
-                            </div>
-
-                            <div className='transferStyleInput'>
-                                <label>Lời nhắn</label>
-                                <textarea type="text" name="description" id="description" required
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    onBlur={e => {
-                                        if (e.target.value.length >= 151)
-                                            setErrorDescription("Lời nhắn không dài quá 150 ký tự!!!")
-                                        else
-                                            setErrorDescription("")
-                                    }} />
-                                <span className='textErrorMsg'>{errorDescription}</span>
-                            </div>
-
-                            <div className='transferSubmit'>
-                                <span className='textErrorMsg'>{modaltitle}</span>
-                                <button type="submit" className='btnButton btnTransfer'>Xác nhận</button>
-                            </div>
-                        </form>
+                        })}
                     </div>
                 </div>
             </div>
-        </>
-
+        </div>
     )
 }
-
-export default Transfer
+export default GetPayment;

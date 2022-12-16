@@ -8,14 +8,13 @@ import Cookies from 'js-cookie';
 
 function Payment() {
     const milliseconds = new Date();
-    const [fromAcc, setFromAcc] = useState("");
     const [sdId, setSdId] = useState("");
     const [amount, setAmount] = useState("");
     const [description, setDescription] = useState("");
     const [errorDescription, setErrorDescription] = useState("");
     const [modaltitle, setModalTitle] = useState("");
     const navigate = useNavigate();
-    const url = "http://localhost:3000/transfer";
+    const url = "http://localhost:3000/payment";
 
     const config = {
         "headers": {
@@ -26,46 +25,60 @@ function Payment() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const values = {
-            data: {
-                fromAcc: fromAcc,
-                sdId: sdId,
-                amount: amount,
-                description: description,
-                token: Cookies.get('token'),
-            },
-            request: {
-                requestId: uuidv4(),
-                requestTime: milliseconds.getTime(),
+        if(description.length >= 151) {
+            setErrorDescription("Lời nhắn không dài quá 150 ký tự!!!");
+        } else {
+            const values = {
+                data: {
+                    sdId: sdId,
+                    amount: amount,
+                    description: description,
+                    token: Cookies.get('token'),
+                },
+                request: {
+                    requestId: uuidv4(),
+                    requestTime: milliseconds.getTime(),
+                }
             }
+    
+            axios.post(url, JSON.stringify(values), config)
+                .then(res => {
+                    console.log(res)
+                    if( res.data.responseCode === '00'){
+                        //thanh cong
+                        sessionStorage.setItem("sdId", sdId);
+                        sessionStorage.setItem("amountHP", amount);
+                        sessionStorage.setItem("descriptionHP", description);
+                        navigate("/verify_transfer");
+                    } else {
+                        //that bai
+                        setModalTitle("Hệ thống đang xảy ra lỗi vui lòng quay lại sau!");
+                    }  
+                })
+                .catch(error => {
+                    setModalTitle("Hệ thống đang xảy ra lỗi vui lòng quay lại sau!");
+                    console.log(error);
+                })
         }
-
-        axios.post(url, JSON.stringify(values), config)
-            .then(res => {
-                
-                
-            })
-            .catch(error => {
-                setModalTitle("Hệ thống đang xảy ra lỗi vui lòng quay lại sau!");
-                console.log(error);
-            })
+        
     }
     return (
         <>
             <div className='transferPage'>
                 <div className='transferContainer'>
                     <div className='transferWraper'>
-                        <h2>Chưc năng chuyển khoản</h2>
+                        <h2>Thanh toán học phí</h2>
+                        <span className='textErrorMsg'>{modaltitle}</span>
                         <form onSubmit={handleSubmit}>
                             <div className='transferStyleInput'>
-                                <label>Số tiền cần đóng</label>
-                                <input type="number" name="amount" id="amount" required
-                                    onChange={(e) => setAmount(e.target.value)} />
+                                <label>Mã số sinh viên</label>
+                                <input type="text" name="acctid" id="acctid" required
+                                    onChange={(e) => setSdId(e.target.value)} />
                             </div>
                             <div className='transferStyleInput'>
-                                <label>Tới số tài khoản </label>
+                                <label>Số tiền đóng</label>
                                 <input type="number" name="amount" id="amount" required
-                                    onChange={(e) => setSdId(e.target.value)} />
+                                    onChange={(e) => setAmount(e.target.value)} />
                             </div>
                             <div className='transferStyleInput'>
                                 <label>Lời nhắn</label>
@@ -73,15 +86,14 @@ function Payment() {
                                     onChange={(e) => setDescription(e.target.value)}
                                     onBlur={e => {
                                         if (e.target.value.length >= 151)
-                                            setErrorDescription("Lời nhắn không dài quá 150 ký tự!!!")
+                                            setErrorDescription("Lời nhắn không dài quá 150 ký tự!!!");
                                         else
-                                            setErrorDescription("")
+                                            setErrorDescription("");
                                     }} />
                                 <span className='textErrorMsg'>{errorDescription}</span>
                             </div>
 
                             <div className='transferSubmit'>
-                                <span className='textErrorMsg'>{modaltitle}</span>
                                 <button type="submit" className='btnButton btnTransfer'>Xác nhận</button>
                             </div>
                         </form>

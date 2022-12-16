@@ -13,7 +13,7 @@ import TransferHistory from "./pages/transferhistory/TransferHistory";
 import Cookies from 'js-cookie';
 import CheckOtpTransfer from "./pages/checkotpcode/CheckOtpTransfer";
 import ConfirmTransfer from "./pages/confirmtransfer/ConfirmTransfer";
-
+import GetPayment from "./pages/getpament/getPayment";
 import { useEffect, useState } from "react";
 import Payment from "./pages/payment/Payment";
 function App() {
@@ -53,7 +53,8 @@ function App() {
           <Route path="/verify_user" element = {<CheckOtpCode />} />    
           <Route path="/verify_login" element = {<CheckOtpCode />} />  
           <Route path="/verify_transfer" element = {<CheckOtpTransfer />} /> 
-          <Route path="/payment" element = {<Payment />} />    
+          <Route path="/payment" element = {<Payment />} />  
+          <Route path="/getpayment" element = {<GetPayment />} />    
           <Route path="/verify_change_password" element = {<CheckOtpCode user = {user} />} />    
           <Route path="/confirm_transfer" element = {<ConfirmTransfer />} />
         </Routes>

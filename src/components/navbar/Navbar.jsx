@@ -26,7 +26,7 @@ function Navbar({user}) {
                                 <li><Link to="/transfer" className="link hover"> Chuyển khoản</Link></li>
                                 <li><Link to="/transferHistory" className="link hover"> Lịch sử giao dịch</Link></li>
                                 <li><Link to="/payment" className="link hover"> Thanh toán học phí</Link></li>
-                                <li><Link to="" className="link hover"> Danh sách học phí</Link></li>
+                                <li><Link to="/getpayment" className="link hover"> Danh sách học phí</Link></li>
                             </ul>
                         </div>
                         <div className="navbarUser">
